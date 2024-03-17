@@ -1,0 +1,22 @@
+watches:
+  file_pattern: ^docs
+
+message:
+  template: |
+    Pull request Proposed changes:
+    
+    *User*: {{actor}}
+    *Pull Request*: {{title}}
+    *Link*: {{link}}
+    
+    {{changes}}
+
+notify:
+  url: ${WD_NOTIFY_URL}
+  token: ${WD_NOTIFY_TOKEN}
+  body: |
+    {
+      "topic": "${WD_NOTIFY_TOPIC}",
+      "subject": "Notify Subject",
+      "message": "{{message}}"
+    }

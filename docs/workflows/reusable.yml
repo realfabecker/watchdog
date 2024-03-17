@@ -1,0 +1,61 @@
+name: reusable
+
+on:
+  workflow_call:
+    inputs:
+      config:
+        required: true
+        type: string
+    secrets:
+      WD_NOTIFY_URL:
+        required: true
+      WD_NOTIFY_TOPIC:
+        required: true
+      WD_NOTIFY_SECRET:
+        required: true
+
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    name: watchdog
+
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - name: Checkout
+        id: checkout-code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          set-safe-directory: '*'
+
+      - name: Watchdog config (on-push)
+        uses: realfabecker/watchdog-action@master
+        if: github.event_name == 'push'
+        with:
+          config: ${{ inputs.config }}
+          actor: ${{ github.actor }}
+          from: ${{ github.event.before }}
+          to: ${{ github.event.after }}
+          title: "Push Commit"
+          link: ${{ github.event.compare }}
+          url: ${{ secrets.WD_NOTIFY_URL }}
+          topic: ${{ secrets.WD_NOTIFY_TOPIC }}
+          secret: ${{ secrets.WD_NOTIFY_SECRET }}
+
+      - name: Watchdog config (on-pull_request)
+        uses: realfabecker/watchdog-action@master
+        if: github.event_name == 'pull_request'
+        with:
+          config: ${{ inputs.config }}
+          actor: ${{ github.actor }}
+          from: ${{ format('origin/{0}',github.base_ref) }}
+          to: ${{ github.sha }}
+          title: ${{ github.event.pull_request.title }}
+          link: ${{ github.event.pull_request.html_url }}
+          url: ${{ secrets.WD_NOTIFY_URL }}
+          topic: ${{ secrets.WD_NOTIFY_TOPIC }}
+          secret: ${{ secrets.WD_NOTIFY_SECRET }}

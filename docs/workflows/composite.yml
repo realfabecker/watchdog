@@ -1,0 +1,60 @@
+name: composite
+
+description: "simple git change notifier"
+
+inputs:
+  actor:
+    description: "committer"
+    required: true
+  from:
+    description: "start commit to compare from"
+    required: true
+  to:
+    description: "last commit to compare to"
+    required: true
+  link:
+    description: "changes reference url"
+    required: true
+  title:
+    description: "event notification title"
+    required: true
+  url:
+    description: "url to send the notification"
+    required: true
+  secret:
+    description: "notification service secret"
+    required: true
+  topic:
+    description: "event notification topic"
+    required: true
+  config:
+    description: "watchdog yml config path"
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    - name: download dependencies
+      run: |
+        sudo apt-get update && sudo apt-get install -y libssl-dev
+        curl -s -L -o watchdog $(curl -s https://api.github.com/repos/realfabecker/watchdog/releases/latest | grep browser_download_url | cut -d '"' -f 4)
+        chmod +x watchdog
+      shell: bash
+
+    - name: run watchdog change notifier
+      env:
+        WD_NOTIFY_URL: ${{ inputs.url }}
+        WD_NOTIFY_TOKEN: ${{ inputs.secret }}
+        WD_NOTIFY_TOPIC: ${{ inputs.topic }}
+      run: |
+        ./watchdog --actor ${{ inputs.actor }} \
+            --from ${{ inputs.from }} \
+            --to ${{ inputs.to }} \
+            --link "${{ inputs.link }}" \
+            --title "${{ inputs.title }}" \
+            --config ${{ inputs.config }}
+      shell: bash
+
+branding:
+  color: blue
+  icon: book-open

@@ -1,0 +1,43 @@
+name: watchdog
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+    types:
+      - opened
+      - edited
+
+jobs:
+  watchdog-on-push:
+    uses: realfabecker/.github/.github/workflows/watchdog.yml@main
+    if: github.event_name == 'push'
+    with:
+      config: "./docs/config/wd-push.yml"
+      actor: ${{ github.actor }}
+      from: ${{ github.event.before }}
+      to: ${{ github.event.after }}
+      title: "Push Commit"
+      link: ${{ github.event.compare }}
+    secrets:
+      WD_NOTIFY_URL: ${{ secrets.WD_NOTIFY_URL }}
+      WD_NOTIFY_TOPIC: ${{ secrets.WD_NOTIFY_TOPIC }}
+      WD_NOTIFY_SECRET: ${{ secrets.WD_NOTIFY_SECRET }}
+
+  watchdog-on-pull:
+    uses: realfabecker/.github/.github/workflows/watchdog.yml@main
+    if: github.event_name == 'pull_request'
+    with:
+      config: "./docs/config/wd-pr.yml"
+      actor: ${{ github.actor }}
+      from: ${{ format('origin/{0}',github.base_ref) }}
+      to: ${{ github.sha }}
+      title: ${{ github.event.pull_request.title }}
+      link: ${{ github.event.pull_request.html_url }}
+    secrets:
+      WD_NOTIFY_URL: ${{ secrets.WD_NOTIFY_URL }}
+      WD_NOTIFY_TOPIC: ${{ secrets.WD_NOTIFY_TOPIC }}
+      WD_NOTIFY_SECRET: ${{ secrets.WD_NOTIFY_SECRET }}
