@@ -1,12 +1,12 @@
-name: watchdog
+name: watch-flow
 
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
     types:
       - opened
       - edited
@@ -16,7 +16,7 @@ jobs:
     uses: realfabecker/.github/.github/workflows/watchdog.yml@main
     if: github.event_name == 'push'
     with:
-      config: "./docs/config/wd-push.yml"
+      config: "./config/wd-ps.yml"
       actor: ${{ github.actor }}
       from: ${{ github.event.before }}
       to: ${{ github.event.after }}
@@ -25,13 +25,13 @@ jobs:
     secrets:
       WD_NOTIFY_URL: ${{ secrets.WD_NOTIFY_URL }}
       WD_NOTIFY_TOPIC: ${{ secrets.WD_NOTIFY_TOPIC }}
-      WD_NOTIFY_SECRET: ${{ secrets.WD_NOTIFY_SECRET }}
+      WD_NOTIFY_TOKEN: ${{ secrets.WD_NOTIFY_TOKEN }}
 
   watchdog-on-pull:
     uses: realfabecker/.github/.github/workflows/watchdog.yml@main
     if: github.event_name == 'pull_request'
     with:
-      config: "./docs/config/wd-pr.yml"
+      config: "./config/wd-pr.yml"
       actor: ${{ github.actor }}
       from: ${{ format('origin/{0}',github.base_ref) }}
       to: ${{ github.sha }}
@@ -40,4 +40,4 @@ jobs:
     secrets:
       WD_NOTIFY_URL: ${{ secrets.WD_NOTIFY_URL }}
       WD_NOTIFY_TOPIC: ${{ secrets.WD_NOTIFY_TOPIC }}
-      WD_NOTIFY_SECRET: ${{ secrets.WD_NOTIFY_SECRET }}
+      WD_NOTIFY_TOKEN: ${{ secrets.WD_NOTIFY_TOKEN }}

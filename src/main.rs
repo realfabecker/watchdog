@@ -114,7 +114,7 @@ async fn sirene(args: Args) -> Result<(), Box<dyn error::Error>> {
 
     return notify(&config.notify.url, &config.notify.token, create_message_from(Template {
         actor: args.actor.clone(),
-        title: args.title,
+        title: args.title.replace("\"", ""),
         changes: changes.clone(),
         tmpl: config.message.template.clone(),
         link: args.link,

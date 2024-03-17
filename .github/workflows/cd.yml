@@ -24,16 +24,32 @@ jobs:
       - name: Docker Build
         run: make build-bundle
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+      - name: Generate a changelog
+        uses: orhun/git-cliff-action@v2
+        id: git-cliff
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          draft: false
-          prerelease: false
+          config: cliff.toml
+          args: --verbose
+        env:
+          OUTPUT: CHANGELOG.md
+
+      - name: Commit changes
+        id: commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          set +e
+          git add CHANGELOG.md
+          git commit -m "Update changelog"
+          git push https://${{ secrets.PAT_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git HEAD:master
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        id: create_release
+        with:
+          tag: ${{ github.ref }}
+          body: ${{ steps.git-cliff.outputs.content }}
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Upload Release Asset (Build)
         id: upload_release
