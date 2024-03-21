@@ -1,6 +1,7 @@
 use std::{env, error, io, path, str};
 
 use clap::Parser;
+use regex::RegexBuilder;
 
 use domain::{Args, Config, Template};
 
@@ -37,7 +38,9 @@ fn create_message_from(tmpl: Template) -> String {
 }
 
 fn is_alert(changes: &[String], pattern: &str) -> Result<bool, std::io::Error> {
-    let regex = regex::Regex::new(pattern)
+    let regex = RegexBuilder::new(pattern)
+        .case_insensitive(true)
+        .build()
         .map_err(|_err| std::io::Error::new(io::ErrorKind::Other, "unable to parse regex"))?;
 
     for i in changes {
